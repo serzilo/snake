@@ -114,6 +114,7 @@ Snake.prototype.drawBookedCell = function(data) {
 
 Snake.prototype.bindEvents = function (){
 	var button = document.getElementById("button"),
+		gameField = document.getElementById("gameField"),
 		that = this;
 
 	this.addEvent(button, 'click', function(e) {
@@ -155,6 +156,86 @@ Snake.prototype.bindEvents = function (){
 			}
 		}
 	});
+
+	
+
+	var initialPoint = {},
+		inGesture = false;
+
+	this.addEvent(gameField, 'touchstart', function(e) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		initialPoint.x = (e.touches) ? e.touches[0].pageX : e.pageX;
+		initialPoint.y = (e.touches) ? e.touches[0].pageY : e.pageY;
+
+		inGesture = true;
+
+		console.log('touchstart');
+	});
+
+	this.addEvent(gameField, 'touchmove', function(e) {
+		event.preventDefault();
+		event.stopPropagation();
+
+		console.log('touchmove');
+
+		if (inGesture === true) {
+			var finalPoint = {},
+				xAbs = 0,
+				yAbs = 0;
+
+			finalPoint.x = (e.touches) ? e.touches[0].pageX : e.pageX;
+			finalPoint.y = (e.touches) ? e.touches[0].pageY : e.pageY;
+
+			xAbs = Math.abs(initialPoint.x - finalPoint.x);
+			yAbs = Math.abs(initialPoint.y - finalPoint.y);
+
+			if ((xAbs > 20 || yAbs > 20) && that.inAction === true) {
+				if (xAbs > yAbs) {
+					if (finalPoint.x < initialPoint.x){
+						if (that.direction !== that.directions.right) {
+							that.direction = that.directions.left;
+							that.addDirectionColor();
+
+							console.log('left');
+						}
+					}else{
+						if (that.direction !== that.directions.left) {
+							that.direction = that.directions.right;
+							that.addDirectionColor();
+
+							console.log('right');
+						}
+					}
+				} else {
+					if (finalPoint.y > initialPoint.y){
+						if (that.direction !== that.directions.up) {
+							that.direction = that.directions.down;
+							that.addDirectionColor();
+
+							console.log('down');
+						}
+					} else{
+						if (that.direction !== that.directions.down) {
+							that.direction = that.directions.up;
+							that.addDirectionColor();
+
+							console.log('up');
+						}
+					}
+				}
+
+				inGesture = false;
+				console.log('gesture')
+			}
+		}
+	}, false);
+
+
+
+
+
 }
 
 Snake.prototype.startGame = function (){
@@ -263,8 +344,6 @@ Snake.prototype.drawNextFrame = function (){
 	this.snakeCoords.unshift(newFirstSnakeCell);
 
 	this.drawBookedCell(newFirstSnakeCell);
-
-	console.log('new frame');
 }
 
 Snake.prototype.addFood = function (){
@@ -385,110 +464,3 @@ Snake.prototype.addEvent =  function addEvent(elem, evType, fn) {
 		elem['on' + evType] = fn;
 	}
 }
-
-
-
-
-
-
-
-
-
-function MobiSwipe(id) {
-	var _this = this;
-
-	this.HORIZONTAL = 1;
-	this.VERTICAL = 2;
-	this.AXIS_THRESHOLD = 30;
-	this.GESTURE_DELTA = 60;
-
-	this.direction = this.HORIZONTAL;
-	this.element = document.getElementById(id);
-	this.onswiperight = null;
-	this.onswipeleft = null;
-	this.onswipeup = null;
-	this.onswipedown = null;
-	this.inGesture = false;
-
-	this._originalX = 0;
-	this._originalY = 0;
-
-	this.element.onclick = function() {
-		void(0)
-	};
-
-	var mousedown = function(event) {
-		event.preventDefault();
-		_this.inGesture = true;
-		_this._originalX = (event.touches) ? event.touches[0].pageX : event.pageX;
-		_this._originalY = (event.touches) ? event.touches[0].pageY : event.pageY;
-
-		if (event.touches && event.touches.length != 1) {
-			_this.inGesture = false;
-		}
-	};
-
-	var mousemove = function(event) {
-		event.preventDefault();
-		var delta = 0,
-			currentX = (event.touches) ? event.touches[0].pageX : event.pageX,
-			currentY = (event.touches) ? event.touches[0].pageY : event.pageY;
-		
-		if (_this.inGesture) {
-			if ((_this.direction == _this.HORIZONTAL)) {
-				delta = Math.abs(currentY - _this._originalY);
-			} else {
-				delta = Math.abs(currentX - _this._originalX);
-			}
-
-			if (delta > _this.AXIS_THRESHOLD) {
-				_this.inGesture = false;
-			}
-		}
-
-		if (_this.inGesture) {
-			if (_this.direction == _this.HORIZONTAL) {
-				delta = Math.abs(currentX - _this._originalX);
-
-				if (currentX > _this._originalX) {
-					direction = 0;
-				} else {
-					direction = 1;
-				}
-			} else {
-				delta = Math.abs(currentY - _this._originalY);
-
-				if (currentY > _this._originalY) {
-					direction = 2;
-				} else {
-					direction = 3;
-				}
-			}
-
-			if (delta >= _this.GESTURE_DELTA) {
-				var handler = null;
-
-				switch(direction) {
-					case 0: handler = _this.onswiperight; break;
-					case 1: handler = _this.onswipeleft; break;
-					case 2: handler = _this.onswipedown; break;
-					case 3: handler = _this.onswipeup; break;
-				}
-
-				if (handler != null) {
-					handler(delta);
-				}
-
-				_this.inGesture = false;
-			}
-		}
-	};
-
-	this.element.addEventListener('touchstart', mousedown, false);
-	this.element.addEventListener('touchmove', mousemove, false);
-	this.element.addEventListener('touchcancel', function() {
-		_this.inGesture = false;
-	}, false);
-}
-
-
