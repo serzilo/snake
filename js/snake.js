@@ -1,8 +1,8 @@
 function Snake(data) {
 	this.id = data.id;
-	this.rows = 10;
-	this.cols = 10;
-	this.snakeStartLength = 6;
+	this.rows = 5;
+	this.cols = 5;
+	this.snakeStartLength = 3;
 	this.snakeCoords = [];
 	this.bookedCellClassName = 'booked';
 	this.foodCellClassName = 'food';
@@ -15,6 +15,13 @@ function Snake(data) {
 	}
 	this.direction = 0;
 
+	this.directionsClassNames = {
+		up:'moveUp',
+		right: 'moveRight',
+		down: 'moveDown',
+		left: 'moveLeft'
+	}
+
 	this.keyCodes = {
 		up: 38,
 		right: 39,
@@ -26,7 +33,11 @@ function Snake(data) {
 
 	this.gameInterval = null;
 
+	this.extendSnake = false;
+
 	this.foodCoords = {};
+
+	this.score = 0;
 
 	this.init();
 }
@@ -42,7 +53,8 @@ Snake.prototype.drawLayout = function() {
 		j,
 		cellWidth = 100 / this.cols;
 
-	html += this.makeTools();
+	html += this.makeTools() + 
+		'<div class="gameField clear">';
 
 	for (i; i < this.rows; i++) {
 		j = 0;
@@ -56,7 +68,7 @@ Snake.prototype.drawLayout = function() {
 		html += '</div>';
 	}
 
-	html += '</div>';
+	html += '</div></div>';
 
 	document.getElementById(this.id).innerHTML = html;
 }
@@ -64,7 +76,7 @@ Snake.prototype.drawLayout = function() {
 Snake.prototype.makeTools = function() {
 	var html = '<div class="tools">' +
 	'<button id="button">start</button>' +
-	'<span id="score"></span>' + 
+	'<span id="score">0</span>' + 
 	'</div>';
 
 	return html;
@@ -146,8 +158,7 @@ Snake.prototype.bindEvents = function (){
 Snake.prototype.startGame = function (){
 	this.makeSnake();
 	this.addFood();
-
-	//console.log(this.snakeCoords);
+	this.addDirection();
 
 	this.gameInterval = setInterval(this.drawNextFrame.bind(this), 1000);
 }
@@ -164,8 +175,18 @@ Snake.prototype.drawNextFrame = function (){
 		return;
 	}
 
-	if (lastSnakeCell) {
-		this.removeClass(document.getElementById('cell_' + lastSnakeCell.x + '_'  + lastSnakeCell.y), this.bookedCellClassName);
+	if (this.extendSnake === true) {
+		this.extendSnake = false;
+
+		this.addFood();
+
+		if (lastSnakeCell) {
+			this.snakeCoords.push(lastSnakeCell);
+		}
+	} else {
+		if (lastSnakeCell) {
+			this.removeClass(document.getElementById('cell_' + lastSnakeCell.x + '_'  + lastSnakeCell.y), this.bookedCellClassName);
+		}
 	}
 
 	if (this.direction == this.directions.up) {
@@ -221,6 +242,22 @@ Snake.prototype.drawNextFrame = function (){
 		}
 	}
 
+	if (newFirstSnakeCell.x == this.foodCoords.x && newFirstSnakeCell.y == this.foodCoords.y) { 
+		var food = document.getElementById("cell_" + this.foodCoords.x + "_" + this.foodCoords.y);
+
+		this.removeClass(food, this.foodCellClassName);
+
+		this.extendSnake = true;
+
+		this.foodCoords = {};
+
+		this.score += 1;
+
+		document.getElementById("score").innerHTML = this.score;
+
+		console.log('extend');
+	}
+
 	this.snakeCoords.unshift(newFirstSnakeCell);
 
 	this.drawBookedCell(newFirstSnakeCell);
@@ -230,20 +267,24 @@ Snake.prototype.drawNextFrame = function (){
 
 Snake.prototype.addFood = function (){
 	var coords = {},
-		newCoords = false,
+		newCoords = true,
 		snakeLength = this.snakeCoords.length,
 		i = 0;
 
-	while(newCoords === false) {
+	while(true) {
 		coords = this.getCoordsForFood();
+
+		newCoords = true;
 
 		for (i; i < snakeLength; i++) {
 			if (this.snakeCoords[i].x == coords.x && this.snakeCoords[i].y == coords.y) {
-				break;
+				newCoords = false;
 			}
 		}
 
-		newCoords = true;
+		if (newCoords === true) {
+			break;
+		}
 	}
 
 	this.foodCoords.x = coords.x;
@@ -254,6 +295,21 @@ Snake.prototype.addFood = function (){
 	this.drawBookedCell(coords);
 
 	console.log('food');
+}
+
+Snake.prototype.addDirection = function (clear){
+	var el = document.getElementById("gameField");
+
+	this.removeClass(el, this.directionsClassNames.up);
+	this.removeClass(el, this.directionsClassNames.right);
+	this.removeClass(el, this.directionsClassNames.down);
+	this.removeClass(el, this.directionsClassNames.left);
+
+	if (clear && clear === false) {
+
+	} else {
+
+	}
 }
 
 Snake.prototype.setDefaultState = function (){
@@ -272,10 +328,13 @@ Snake.prototype.setDefaultState = function (){
 	this.snakeCoords = [];
 	this.inAction = false;
 	this.foodCoords = {};
+	this.extendSnake = false;
+	this.score = 0;
 
 	clearInterval(this.gameInterval);
 
 	document.getElementById("button").innerHTML = 'start';
+	document.getElementById("score").innerHTML = '0';
 	
 	console.log('clear');
 }

@@ -42,3 +42,30 @@ body {
 .booked {
 	background: red;
 }
+
+.clear:after {
+	content: '';
+	width: 100%;
+	display: block;
+	clear: both;
+}
+
+.gameField {
+	border: 5px solid transparent;
+}
+
+.moveUp {
+	border-top-color: #a53434;
+}
+
+.moveRight {
+	border-right-color: #a53434;
+}
+
+.moveDown {
+	border-bottom-color: #a53434;
+}
+
+.moveLeft {
+	border-left-color: #a53434;
+}
