@@ -1,11 +1,13 @@
 function Snake(data) {
 	this.id = data.id;
-	this.rows = 5;
-	this.cols = 5;
+	this.rows = 20;
+	this.cols = 20;
 	this.snakeStartLength = 3;
 	this.snakeCoords = [];
 	this.bookedCellClassName = 'booked';
 	this.foodCellClassName = 'food';
+
+	this.snakeSpeed = 500;
 
 	this.directions = {
 		up: 0,
@@ -48,7 +50,7 @@ Snake.prototype.init = function() {
 }
 
 Snake.prototype.drawLayout = function() {
-	var html = '<div class="game">',
+	var html = '<div class="game" id="game">',
 		i = 0,
 		j,
 		cellWidth = 100 / this.cols;
@@ -71,10 +73,12 @@ Snake.prototype.drawLayout = function() {
 	html += '</div></div>';
 
 	document.getElementById(this.id).innerHTML = html;
+
+	this.setGameDimensions();
 }
 
 Snake.prototype.makeTools = function() {
-	var html = '<div class="tools clear">' +
+	var html = '<div id="tools" class="tools clear">' +
 	'<button id="button">start</button>' +
 	'<span id="score" class="score">Score: 0</span>' + 
 	'</div>';
@@ -157,6 +161,10 @@ Snake.prototype.bindEvents = function (){
 		}
 	});
 
+	this.addEvent(window, 'resize', function(e) {
+		that.setGameDimensions();
+	});	
+
 	var initialPoint = {},
 		inGesture = false;
 
@@ -223,7 +231,7 @@ Snake.prototype.startGame = function (){
 	this.addFood();
 	this.addDirectionColor();
 
-	this.gameInterval = setInterval(this.drawNextFrame.bind(this), 1000);
+	this.gameInterval = setInterval(this.drawNextFrame.bind(this), this.snakeSpeed);
 }
 
 Snake.prototype.drawNextFrame = function (){
@@ -354,7 +362,7 @@ Snake.prototype.addFood = function (){
 	this.drawBookedCell(coords);
 }
 
-Snake.prototype.addDirectionColor = function (clear){
+Snake.prototype.addDirectionColor = function (clear) {
 	var el = document.getElementById("gameField"),
 		className = '';
 
@@ -378,7 +386,20 @@ Snake.prototype.addDirectionColor = function (clear){
 	}
 }
 
-Snake.prototype.setDefaultState = function (){
+Snake.prototype.setGameDimensions = function () {
+	var h = window.innerHeight || document.documentElement.clientHeight,
+		toolsHeight = document.getElementById('tools').offsetHeight,
+		gameElement = document.getElementById('game'),
+		newWidth = h - toolsHeight;
+
+	if (newWidth > 500) {
+		newWidth = 500;
+	}
+
+	gameElement.style.maxWidth = newWidth + 'px';
+}
+
+Snake.prototype.setDefaultState = function () {
 	var snakeLength = this.snakeCoords.length,
 		food = document.getElementById('cell_' + this.foodCoords.x + '_'  + this.foodCoords.y),
 		i = 0;
@@ -416,7 +437,7 @@ Snake.prototype.getRandomInt = function (min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-Snake.prototype.addClass = function (o, c){
+Snake.prototype.addClass = function (o, c) {
     var re = new RegExp("(^|\\s)" + c + "(\\s|$)", "g");
 
     if (re.test(o.className)) {
@@ -426,7 +447,7 @@ Snake.prototype.addClass = function (o, c){
     o.className = (o.className + " " + c).replace(/\s+/g, " ").replace(/(^ | $)/g, "");
 }
  
-Snake.prototype.removeClass = function (o, c){
+Snake.prototype.removeClass = function (o, c) {
     var re = new RegExp("(^|\\s)" + c + "(\\s|$)", "g");
 
     o.className = o.className.replace(re, "$1").replace(/\s+/g, " ").replace(/(^ | $)/g, "");

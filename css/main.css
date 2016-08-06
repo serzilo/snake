@@ -11,13 +11,11 @@ body {
 }
 
 .game {
-	padding: 10px;
-	max-width: 500px;
 	margin: 0 auto;
 }
 
 .tools {
-	padding-bottom: 10px;
+	padding: 10px 10px 0 10px;
 }
 
 .row {
@@ -28,10 +26,6 @@ body {
 	float: left;
 	position: relative;
 	outline:1px solid;
-	/*
-	border: 1px solid #ccc;
-	box-sizing: border-box;
-	*/
 }
 
 .cell:before {
@@ -53,6 +47,7 @@ body {
 
 .gameField {
 	border: 5px solid transparent;
+	margin: 5px;
 }
 
 .moveUp {
