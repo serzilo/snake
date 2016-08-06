@@ -54,7 +54,7 @@ Snake.prototype.drawLayout = function() {
 		cellWidth = 100 / this.cols;
 
 	html += this.makeTools() + 
-		'<div class="gameField clear">';
+		'<div class="gameField clear" id="gameField">';
 
 	for (i; i < this.rows; i++) {
 		j = 0;
@@ -100,8 +100,6 @@ Snake.prototype.makeSnake = function() {
 		this.snakeCoords.push(coords);
 		this.drawBookedCell(coords);
 	}
-
-	console.dir(this.snakeCoords)
 }
 
 Snake.prototype.drawBookedCell = function(data) {
@@ -133,32 +131,36 @@ Snake.prototype.bindEvents = function (){
 	});
 
 	this.addEvent(window, 'keydown', function(e) {
-		if (e.keyCode === that.keyCodes.up) {
-			if (that.direction !== that.directions.down) {
-				that.direction = that.directions.up;
+		if (that.inAction === true) {
+			if (e.keyCode === that.keyCodes.up) {
+				if (that.direction !== that.directions.down) {
+					that.direction = that.directions.up;
+				}
+			} else if (e.keyCode === that.keyCodes.right) {
+				if (that.direction !== that.directions.left) {
+					that.direction = that.directions.right;
+				}
+			} else if (e.keyCode === that.keyCodes.down) {
+				if (that.direction !== that.directions.up) {
+					that.direction = that.directions.down;
+				}
+			} else if (e.keyCode === that.keyCodes.left) {
+				if (that.direction !== that.directions.right) {
+					that.direction = that.directions.left;
+				}
 			}
-		} else if (e.keyCode === that.keyCodes.right) {
-			if (that.direction !== that.directions.left) {
-				that.direction = that.directions.right;
-			}
-		} else if (e.keyCode === that.keyCodes.down) {
-			if (that.direction !== that.directions.up) {
-				that.direction = that.directions.down;
-			}
-		} else if (e.keyCode === that.keyCodes.left) {
-			if (that.direction !== that.directions.right) {
-				that.direction = that.directions.left;
+
+			if (e.keyCode === that.keyCodes.up || e.keyCode === that.keyCodes.right || e.keyCode === that.keyCodes.down || e.keyCode === that.keyCodes.left) {
+				that.addDirectionColor();
 			}
 		}
-
-		console.log('direction: '+that.direction);
 	});
 }
 
 Snake.prototype.startGame = function (){
 	this.makeSnake();
 	this.addFood();
-	this.addDirection();
+	this.addDirectionColor();
 
 	this.gameInterval = setInterval(this.drawNextFrame.bind(this), 1000);
 }
@@ -297,18 +299,27 @@ Snake.prototype.addFood = function (){
 	console.log('food');
 }
 
-Snake.prototype.addDirection = function (clear){
-	var el = document.getElementById("gameField");
+Snake.prototype.addDirectionColor = function (clear){
+	var el = document.getElementById("gameField"),
+		className = '';
 
 	this.removeClass(el, this.directionsClassNames.up);
 	this.removeClass(el, this.directionsClassNames.right);
 	this.removeClass(el, this.directionsClassNames.down);
 	this.removeClass(el, this.directionsClassNames.left);
 
-	if (clear && clear === false) {
+	if (clear === undefined) {
+		if (this.direction === this.directions.up) {
+			className = this.directionsClassNames.up;
+		} else if (this.direction === this.directions.right) {
+			className = this.directionsClassNames.right;
+		} else if (this.direction === this.directions.down) {
+			className = this.directionsClassNames.down;
+		} else if (this.direction === this.directions.left) {
+			className = this.directionsClassNames.left;
+		}
 
-	} else {
-
+		this.addClass(el, className);
 	}
 }
 
@@ -330,6 +341,8 @@ Snake.prototype.setDefaultState = function (){
 	this.foodCoords = {};
 	this.extendSnake = false;
 	this.score = 0;
+
+	this.addDirectionColor(false);
 
 	clearInterval(this.gameInterval);
 
@@ -373,5 +386,109 @@ Snake.prototype.addEvent =  function addEvent(elem, evType, fn) {
 	}
 }
 
+
+
+
+
+
+
+
+
+function MobiSwipe(id) {
+	var _this = this;
+
+	this.HORIZONTAL = 1;
+	this.VERTICAL = 2;
+	this.AXIS_THRESHOLD = 30;
+	this.GESTURE_DELTA = 60;
+
+	this.direction = this.HORIZONTAL;
+	this.element = document.getElementById(id);
+	this.onswiperight = null;
+	this.onswipeleft = null;
+	this.onswipeup = null;
+	this.onswipedown = null;
+	this.inGesture = false;
+
+	this._originalX = 0;
+	this._originalY = 0;
+
+	this.element.onclick = function() {
+		void(0)
+	};
+
+	var mousedown = function(event) {
+		event.preventDefault();
+		_this.inGesture = true;
+		_this._originalX = (event.touches) ? event.touches[0].pageX : event.pageX;
+		_this._originalY = (event.touches) ? event.touches[0].pageY : event.pageY;
+
+		if (event.touches && event.touches.length != 1) {
+			_this.inGesture = false;
+		}
+	};
+
+	var mousemove = function(event) {
+		event.preventDefault();
+		var delta = 0,
+			currentX = (event.touches) ? event.touches[0].pageX : event.pageX,
+			currentY = (event.touches) ? event.touches[0].pageY : event.pageY;
+		
+		if (_this.inGesture) {
+			if ((_this.direction == _this.HORIZONTAL)) {
+				delta = Math.abs(currentY - _this._originalY);
+			} else {
+				delta = Math.abs(currentX - _this._originalX);
+			}
+
+			if (delta > _this.AXIS_THRESHOLD) {
+				_this.inGesture = false;
+			}
+		}
+
+		if (_this.inGesture) {
+			if (_this.direction == _this.HORIZONTAL) {
+				delta = Math.abs(currentX - _this._originalX);
+
+				if (currentX > _this._originalX) {
+					direction = 0;
+				} else {
+					direction = 1;
+				}
+			} else {
+				delta = Math.abs(currentY - _this._originalY);
+
+				if (currentY > _this._originalY) {
+					direction = 2;
+				} else {
+					direction = 3;
+				}
+			}
+
+			if (delta >= _this.GESTURE_DELTA) {
+				var handler = null;
+
+				switch(direction) {
+					case 0: handler = _this.onswiperight; break;
+					case 1: handler = _this.onswipeleft; break;
+					case 2: handler = _this.onswipedown; break;
+					case 3: handler = _this.onswipeup; break;
+				}
+
+				if (handler != null) {
+					handler(delta);
+				}
+
+				_this.inGesture = false;
+			}
+		}
+	};
+
+	this.element.addEventListener('touchstart', mousedown, false);
+	this.element.addEventListener('touchmove', mousemove, false);
+	this.element.addEventListener('touchcancel', function() {
+		_this.inGesture = false;
+	}, false);
+}
 
 
