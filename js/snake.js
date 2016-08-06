@@ -74,9 +74,9 @@ Snake.prototype.drawLayout = function() {
 }
 
 Snake.prototype.makeTools = function() {
-	var html = '<div class="tools">' +
+	var html = '<div class="tools clear">' +
 	'<button id="button">start</button>' +
-	'<span id="score">0</span>' + 
+	'<span id="score" class="score">Score: 0</span>' + 
 	'</div>';
 
 	return html;
@@ -157,28 +157,22 @@ Snake.prototype.bindEvents = function (){
 		}
 	});
 
-	
-
 	var initialPoint = {},
 		inGesture = false;
 
 	this.addEvent(gameField, 'touchstart', function(e) {
-		event.preventDefault();
-		event.stopPropagation();
+		e.preventDefault();
+		e.stopPropagation();
 
 		initialPoint.x = (e.touches) ? e.touches[0].pageX : e.pageX;
 		initialPoint.y = (e.touches) ? e.touches[0].pageY : e.pageY;
 
 		inGesture = true;
-
-		console.log('touchstart');
 	});
 
 	this.addEvent(gameField, 'touchmove', function(e) {
-		event.preventDefault();
-		event.stopPropagation();
-
-		console.log('touchmove');
+		e.preventDefault();
+		e.stopPropagation();
 
 		if (inGesture === true) {
 			var finalPoint = {},
@@ -197,15 +191,11 @@ Snake.prototype.bindEvents = function (){
 						if (that.direction !== that.directions.right) {
 							that.direction = that.directions.left;
 							that.addDirectionColor();
-
-							console.log('left');
 						}
 					}else{
 						if (that.direction !== that.directions.left) {
 							that.direction = that.directions.right;
 							that.addDirectionColor();
-
-							console.log('right');
 						}
 					}
 				} else {
@@ -213,29 +203,19 @@ Snake.prototype.bindEvents = function (){
 						if (that.direction !== that.directions.up) {
 							that.direction = that.directions.down;
 							that.addDirectionColor();
-
-							console.log('down');
 						}
 					} else{
 						if (that.direction !== that.directions.down) {
 							that.direction = that.directions.up;
 							that.addDirectionColor();
-
-							console.log('up');
 						}
 					}
 				}
 
 				inGesture = false;
-				console.log('gesture')
 			}
 		}
-	}, false);
-
-
-
-
-
+	});
 }
 
 Snake.prototype.startGame = function (){
@@ -336,9 +316,7 @@ Snake.prototype.drawNextFrame = function (){
 
 		this.score += 1;
 
-		document.getElementById("score").innerHTML = this.score;
-
-		console.log('extend');
+		document.getElementById("score").innerHTML = 'Score: ' + this.score;
 	}
 
 	this.snakeCoords.unshift(newFirstSnakeCell);
@@ -374,8 +352,6 @@ Snake.prototype.addFood = function (){
 	coords.cl = this.foodCellClassName;
 
 	this.drawBookedCell(coords);
-
-	console.log('food');
 }
 
 Snake.prototype.addDirectionColor = function (clear){
@@ -426,9 +402,7 @@ Snake.prototype.setDefaultState = function (){
 	clearInterval(this.gameInterval);
 
 	document.getElementById("button").innerHTML = 'start';
-	document.getElementById("score").innerHTML = '0';
-	
-	console.log('clear');
+	document.getElementById("score").innerHTML = 'Score: 0';
 }
 
 Snake.prototype.getCoordsForFood = function () {
@@ -443,24 +417,27 @@ Snake.prototype.getRandomInt = function (min, max) {
 }
 
 Snake.prototype.addClass = function (o, c){
-    var re = new RegExp("(^|\\s)" + c + "(\\s|$)", "g")
-    if (re.test(o.className)) return
-    o.className = (o.className + " " + c).replace(/\s+/g, " ").replace(/(^ | $)/g, "")
+    var re = new RegExp("(^|\\s)" + c + "(\\s|$)", "g");
+
+    if (re.test(o.className)) {
+    	return;
+    }
+
+    o.className = (o.className + " " + c).replace(/\s+/g, " ").replace(/(^ | $)/g, "");
 }
  
 Snake.prototype.removeClass = function (o, c){
-    var re = new RegExp("(^|\\s)" + c + "(\\s|$)", "g")
-    o.className = o.className.replace(re, "$1").replace(/\s+/g, " ").replace(/(^ | $)/g, "")
+    var re = new RegExp("(^|\\s)" + c + "(\\s|$)", "g");
+
+    o.className = o.className.replace(re, "$1").replace(/\s+/g, " ").replace(/(^ | $)/g, "");
 }
 
 Snake.prototype.addEvent =  function addEvent(elem, evType, fn) {
 	if (elem.addEventListener) {
 		elem.addEventListener(evType, fn, false);
-	}
-	else if (elem.attachEvent) {
+	} else if (elem.attachEvent) {
 		elem.attachEvent('on' + evType, fn);
-	}
-	else {
+	} else {
 		elem['on' + evType] = fn;
 	}
 }
